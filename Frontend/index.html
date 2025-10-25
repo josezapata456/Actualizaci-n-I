@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <title>MONIFY - Iniciar sesión</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="logo">M</div>
+      <div class="brand"><h2>MONIFY</h2><p>Cajero - Acceso</p></div>
+    </header>
+
+    <section class="card">
+      <form id="loginForm" class="form">
+        <label class="hint">Usuario</label>
+        <input id="loginUser" class="input" autocomplete="username" required />
+        
+        <label class="hint">Contraseña</label>
+        <input id="loginPass" type="password" class="input" autocomplete="current-password" required />
+        
+        <div id="loginError" class="error" style="display:none"></div>
+        
+        <!-- SOLO UNA FILA DE BOTONES -->
+        <div class="row">
+          <button type="submit" class="btn btn-primary" style="flex:1">Ingresar</button>
+          <a href="register.html" class="btn btn-ghost" style="flex:1; text-align:center;">Registrarse</a>
+        </div>
+
+        <!-- INFO CUENTA DEMO -->
+        <div class="hint" style="margin-top:15px; text-align:center; padding:10px; background:#f8f9fa; border-radius:6px;">
+          Cuenta demo: <strong>demo</strong> / <strong>password</strong>
+        </div>
+      </form>
+    </section>
+
+    <p class="footer">¿No tienes cuenta? Pulsa <a href="register.html" style="color:var(--accent);text-decoration:none">Registrarse</a></p>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      const u = document.getElementById("loginUser").value.trim();
+      const p = document.getElementById("loginPass").value;
+      const err = document.getElementById("loginError");
+      err.style.display = "none";
+      
+      // Mostrar loading
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Conectando...";
+      submitBtn.disabled = true;
+      
+      try {
+        console.log("Intentando login...");
+        await MONIFY.login(u, p);
+        console.log("Login exitoso, redirigiendo...");
+        window.location.href = "home.html";
+      } catch(ex) {
+        console.error("Error completo:", ex);
+        err.style.display = "block";
+        err.textContent = ex.message || "Error de conexión";
+      } finally {
+        // Restaurar botón
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Test de conexión al cargar la página
+    window.addEventListener('load', async function() {
+      try {
+        const response = await fetch('/chat/backend/test.php');
+        const data = await response.json();
+        console.log('Backend test:', data);
+      } catch (error) {
+        console.error('Backend no responde:', error);
+      }
+    });
+  </script>
+</body>
+</html>

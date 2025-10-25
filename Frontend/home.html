@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <title>MONIFY - Inicio</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="logo">M</div>
+      <div class="brand">
+        <h2>MONIFY</h2>
+        <p id="greeting">Bienvenido</p>
+      </div>
+    </header>
+
+    <section class="card balance">
+      <div class="label">Saldo disponible</div>
+      <div class="amount" id="balanceAmount">$0.00</div>
+      <div class="hint" id="usernameLabel"></div>
+    </section>
+
+    <section class="card">
+      <div class="actions">
+        <a class="action" href="deposit.html">Depositar</a>
+        <a class="action" href="withdraw.html">Retirar</a>
+        <a class="action" href="transfer.html">Transferir</a>
+        <a class="action" href="logout.html">Cerrar sesión</a>
+         <a class="action" href="transactions.html">Extractos</a>
+
+      </div>
+      
+    </section>
+
+    
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    function fmt(n){ return Number(n).toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const user = MONIFY.getCurrentUser();
+      if(!user) { window.location.href = "index.html"; return; }
+      document.getElementById("balanceAmount").textContent = '$' + fmt(user.balance);
+      document.getElementById("greeting").textContent = 'Hola, ' + (user.fullName || user.username);
+      document.getElementById("usernameLabel").textContent = 'Usuario: ' + user.username;
+    });
+  </script>
+</body>
+</html>

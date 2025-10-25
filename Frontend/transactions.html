@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <title>MONIFY - Extractos</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .transaction-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: between;
+      align-items: center;
+    }
+    .transaction-type {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .type-deposit { background: #d4edda; color: #155724; }
+    .type-withdraw { background: #f8d7da; color: #721c24; }
+    .type-transfer { background: #cce7ff; color: #004085; }
+    .transaction-amount { font-weight: bold; }
+    .positive { color: #28a745; }
+    .negative { color: #dc3545; }
+    .transaction-date { 
+      font-size: 12px; 
+      color: #666;
+      margin-top: 4px;
+    }
+    .transaction-description {
+      flex: 1;
+      margin-left: 15px;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    .no-transactions {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="logo">M</div>
+      <div class="brand"><h2>Extractos</h2><p>Historial de transacciones</p></div>
+    </header>
+
+    <section class="card">
+      <div class="filters" style="margin-bottom: 15px;">
+        <select id="filterType" class="input" style="padding: 10px;">
+          <option value="all">Todas las transacciones</option>
+          <option value="deposit">Depósitos</option>
+          <option value="withdraw">Retiros</option>
+          <option value="transfer">Transferencias</option>
+        </select>
+      </div>
+
+      <div id="transactionsList">
+        <div class="loading">Cargando transacciones...</div>
+      </div>
+    </section>
+
+    <div class="row" style="margin-top: 10px;">
+      <a href="home.html" class="btn btn-ghost" style="flex:1">Volver al Inicio</a>
+    </div>
+  </main>
+
+  <script src="js/app.js"></script>
+ <script src="js/app.js"></script>
+<script>
+    // BYPASS: Si getTransactions no existe, la creamos manualmente
+    if (typeof MONIFY !== 'undefined' && !MONIFY.getTransactions) {
+        console.log("🔄 Creando getTransactions manualmente...");
+        MONIFY.getTransactions = async function(userId, filterType = 'all') {
+            console.log("✅ getTransactions ejecutándose para usuario:", userId);
+            try {
+                const response = await fetch(this.apiBase + 'transactions.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: 'get_transactions',
+                        user_id: userId,
+                        filter_type: filterType
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log("📊 Transacciones obtenidas:", result.transactions);
+                    return result.transactions;
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('❌ Error en getTransactions:', error);
+                throw new Error('Error al obtener transacciones: ' + error.message);
+            }
+        };
+        console.log("✅ getTransactions creada manualmente");
+    }
+
+    // Código original de transactions.html
+    document.addEventListener('DOMContentLoaded', async function() {
+        const user = MONIFY.getCurrentUser();
+        if(!user) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        console.log("🔍 Verificando getTransactions:", typeof MONIFY.getTransactions);
+        
+        await loadTransactions();
+        document.getElementById('filterType').addEventListener('change', loadTransactions);
+    });
+
+    async function loadTransactions() {
+        const filterType = document.getElementById('filterType').value;
+        const transactionsList = document.getElementById('transactionsList');
+        
+        transactionsList.innerHTML = '<div class="loading">Cargando transacciones...</div>';
+
+        try {
+            // Verificar que la función existe
+            if (typeof MONIFY.getTransactions !== 'function') {
+                throw new Error('getTransactions no es una función');
+            }
+            
+            const transactions = await MONIFY.getTransactions(MONIFY.getCurrentUser().id, filterType);
+            
+            if(transactions.length === 0) {
+                transactionsList.innerHTML = `
+                    <div class="no-transactions">
+                        <p>No hay transacciones registradas</p>
+                        <p style="margin-top: 10px; font-size: 14px;">Realiza tu primera operación</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            transactions.forEach(transaction => {
+                const isPositive = transaction.amount > 0;
+                const typeClass = `type-${transaction.type}`;
+                const amountClass = isPositive ? 'positive' : 'negative';
+                const amountSign = isPositive ? '+' : '';
+                const date = new Date(transaction.created_at).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                html += `
+                    <div class="transaction-item">
+                        <div>
+                            <span class="transaction-type ${typeClass}">${getTypeText(transaction.type)}</span>
+                        </div>
+                        <div class="transaction-description">
+                            <div>${transaction.description}</div>
+                            <div class="transaction-date">${date}</div>
+                        </div>
+                        <div class="transaction-amount ${amountClass}">
+                            ${amountSign}$${Math.abs(transaction.amount).toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            transactionsList.innerHTML = html;
+
+        } catch(error) {
+            console.error("❌ Error completo:", error);
+            transactionsList.innerHTML = `<div class="error">Error al cargar transacciones: ${error.message}</div>`;
+        }
+    }
+
+    function getTypeText(type) {
+        const types = {
+            'deposit': 'Depósito',
+            'withdraw': 'Retiro',
+            'transfer': 'Transferencia'
+        };
+        return types[type] || type;
+    }
+</script>
+</body>
+</html>

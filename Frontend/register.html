@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <title>MONIFY - Registrarse</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="logo">M</div>
+      <div class="brand"><h2>MONIFY</h2><p>Crear cuenta</p></div>
+    </header>
+
+    <section class="card">
+      <form id="registerForm" class="form">
+        <label class="hint">Nombre completo</label>
+        <input id="regFull" class="input" required />
+        <label class="hint">Usuario</label>
+        <input id="regUser" class="input" required />
+        <label class="hint">Contraseña</label>
+        <input id="regPass" type="password" class="input" required />
+        <label class="hint">Confirmar contraseña</label>
+        <input id="regPass2" type="password" class="input" required />
+        <div id="regError" class="error" style="display:none"></div>
+        <div class="row">
+          <button type="submit" class="btn btn-primary" style="flex:1">Registrar</button>
+          <a href="index.html" class="btn btn-ghost" style="flex:1">Volver</a>
+        </div>
+      </form>
+    </section>
+
+    <p class="footer">Al registrarte aceptas las políticas del servicio.</p>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    const form = document.getElementById("registerForm");
+    form.addEventListener("submit", async function(e){
+      e.preventDefault();
+      const full = document.getElementById("regFull").value.trim();
+      const user = document.getElementById("regUser").value.trim();
+      const p1 = document.getElementById("regPass").value;
+      const p2 = document.getElementById("regPass2").value;
+      const err = document.getElementById("regError");
+      err.style.display="none"; err.textContent="";
+
+      // Validaciones básicas
+      if(!full){ err.style.display="block"; err.textContent = "El nombre completo es obligatorio."; return; }
+      if(!user){ err.style.display="block"; err.textContent = "El usuario es obligatorio."; return; }
+      if(!p1 || !p2){ err.style.display="block"; err.textContent = "Complete ambas contrase\u00f1as."; return; }
+      if(p1 !== p2){ err.style.display="block"; err.textContent="Las contrase\u00f1as no coinciden."; return; }
+      if(p1.length < 4){ err.style.display="block"; err.textContent = "La contrase\u00f1a debe tener al menos 4 caracteres."; return; }
+
+      try{
+        // Usar la función registrada que devuelve una promesa
+        await window.registerUser({ username: user, password: p1, fullName: full });
+        // Si fue exitosa, redirigir
+        window.location.href = "home.html";
+      }catch(ex){
+        err.style.display="block"; err.textContent = (ex && ex.message) ? ex.message : "Error al crear cuenta";
+      }
+    });
+  </script>
+</body>
+</html>

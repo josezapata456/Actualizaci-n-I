@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <title>MONIFY - Retirar</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="logo">M</div>
+      <div class="brand"><h2>Retirar</h2><p>Extraer efectivo</p></div>
+    </header>
+
+    <section class="card">
+      <form id="withdrawForm" class="form">
+        <label class="hint">Monto a retirar</label>
+        <input id="withdrawAmount" class="input" type="number" step="0.01" min="0" required />
+        <div id="withMsg" class="success" style="display:none"></div>
+        <div id="withErr" class="error" style="display:none"></div>
+
+        <div class="row" style="margin-top:6px">
+          <button class="btn btn-primary" type="submit" style="flex:1">Retirar</button>
+          <a href="home.html" class="btn btn-ghost" style="flex:1">Cancelar</a>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById("withdrawForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+      const v = parseFloat(document.getElementById("withdrawAmount").value);
+      const msg = document.getElementById("withMsg"), err=document.getElementById("withErr");
+      msg.style.display = err.style.display = "none";
+
+      // Validaciones
+      if(isNaN(v) || v <= 0){ err.style.display = 'block'; err.textContent = 'Ingrese un monto mayor que 0.'; return; }
+
+      try{
+        const user = MONIFY.getCurrentUser();
+        if(!user) throw new Error("Sesión no iniciada");
+        const newBal = await window.withdrawFrom(user.username, v);
+        msg.style.display="block"; msg.textContent = 'Retiro realizado. Nuevo saldo: ' + newBal;
+        setTimeout(()=> window.location.href = "home.html", 1200);
+      }catch(ex){
+        err.style.display="block";
+        // Mostrar exactamente el mensaje del backend, sin anteponer nada
+        if (ex && ex.message) {
+          err.textContent = ex.message;
+        } else if (typeof ex === 'string') {
+          err.textContent = ex;
+        } else {
+          err.textContent = "Error en retiro";
+        }
+      }
+    });
+  </script>
+</body>
+</html>
