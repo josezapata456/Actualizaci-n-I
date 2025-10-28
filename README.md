@@ -141,3 +141,10 @@ document.getElementById('depositForm').addEventListener('submit', async function
 Comprobación de Errores Comunes
 * Error de conexión PHP: Revisa las credenciales en Backend/Config/database.php y confirma que el servicio de MySQL está en ejecución.
 * Error 404 en la API: Verifica la ruta MONIFY.apiBase en Frontend/js/app.js y asegúrate de que coincide con la estructura de carpetas en tu servidor local.
+
+  Una vez ingresa al sistemas las credenciales de prueba son; Usuario: demo
+                                                              Contraseña: password
+* <img width="424" height="502" alt="image" src="https://github.com/user-attachments/assets/2c54ab2c-fb84-4a9e-b873-cf5f95e2ffa3" />
+<img width="409" height="536" alt="image" src="https://github.com/user-attachments/assets/5223b2eb-cd4e-49a9-bfb0-fe30cfd2d114" />
+
+
